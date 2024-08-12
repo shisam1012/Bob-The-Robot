@@ -5,8 +5,10 @@ This is my final project for the Computer Graphics course (20562)
 I run this project by using Microsoft Visual Studio
 I used the FreeGLUT library and the ImGui library, they are included in the "glandstuff.h" file.
 
+There is a link to this project on my git: https://github.com/shisam1012/Bob-The-Robot.git
 Enjoy :)
 */
+
 #include "robotAndMenu.h"
 
 GLint winWidth = 800;
