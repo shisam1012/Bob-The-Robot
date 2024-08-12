@@ -5,12 +5,9 @@ void drawDrawersBase() {
 
     glPushMatrix();
     glTranslatef(4.9, -5.0, -30.0);
-    //glColor3f(0.851, 0.753, 0.004);
-    glColor3f(0.29,0.153,0.153);
+    glColor3f(0.4, 0.396, 0.365);
     glBegin(GL_QUADS);
-    //front
-   // glColor3f(1.0,0.886,0);
-    //glColor3f(0.98, 0.922, 0.482);    
+    //front  
     glVertex3f(-3, 1, 2); //1
     glVertex3f(-3, 0, 2); //2
     glVertex3f(3, 0, 2);  //3
@@ -50,10 +47,7 @@ void drawDrawer() {
 
     glBegin(GL_QUADS);
     //front
-    //glColor3f(1.0, 0.886, 0);
-   // glColor3f(0.98, 0.922, 0.482);
-   // glColor3f(1, 0.965, 0.702);
-    glColor3f(0.588,0.506,0.392);
+    glColor3f(0.8, 0.647, 0.451);
     glVertex3f(-1.5, 2, 2); //1
     glVertex3f(-1.5, 0, 2); //2
     glVertex3f(1.5, 0, 2);  //3
@@ -87,8 +81,6 @@ void drawDrawer() {
     glEnd();
 
     glLineWidth(4.0f);
-    //glColor3f(1.0, 0.765, 0.0);
-    //glColor3f(0.486, 0.557, 0.612);
     glColor3f(0.91, 0.902, 0.741);
     //draw a line with a different color on every edge of the drawer
     glBegin(GL_LINES);
@@ -131,7 +123,6 @@ void drawDrawer() {
     glEnd();
 
     //handle
-   // glColor3f(0.69, 0.643, 0.631);
     glColor3f(0.4,0.396,0.365);
     glLineWidth(1.5f);
 
