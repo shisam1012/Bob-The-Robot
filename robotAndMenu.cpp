@@ -35,6 +35,11 @@ const float MAX_DOWN_HEAD = 65; // Maximum head downward angle
 // Robot body and movement variables
 float DEG_ROB = 0;              // Robot rotation
 float ROB_X = 0, ROB_Z = 0;     // Robot position
+const float MAX_ROB_X = 6.5;    //max x position - the robot can not go outside of the room from the sides with his body
+const float MIN_ROB_X = -6.5;
+const float MAX_ROB_Z = -5;
+const float MIN_ROB_Z = -30.5;
+
 
 // Camera control variables
 bool viewCamera = true;
@@ -47,6 +52,9 @@ float vX = 0;
 float vY = 0;
 float vZ = 0;
 
+
+//Light 0 ambient light -scene ambient light
+float light0Amb = 0.4;
 // Light 1 properties
 float light1X = -8;
 float light1Y = 1;
@@ -113,6 +121,9 @@ void lightning() {
     glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, spotlight_direction);
     glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, spotlight_cutoff);
     glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, spotlight_exponent);
+
+    GLfloat light0_ambient[] = { light0Amb, light0Amb, light0Amb, 1.0f };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light0_ambient);
 }
 
 // Function to initialize OpenGL settings
@@ -138,7 +149,7 @@ void init() {
     
     // Initialize light 0 (ambient lighting)
     GLfloat light0_position[] = { 1.0f, 1.0f, 1.0f, 0.0f }; // Directional light
-    GLfloat light0_ambient[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+    GLfloat light0_ambient[] = { light0Amb, light0Amb, light0Amb, 1.0f };
     GLfloat light0_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
     GLfloat light0_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -366,8 +377,8 @@ void drawNeck() {
 
 }
 
-// drawing the robot's shoulder
-void drawShoulder() {
+// drawing the robot's upper arm
+void drawUpperArm() {
     glPushMatrix();
 
     glTranslatef(-1.25, -1.75, -25.5);
@@ -416,8 +427,8 @@ void drawShoulder() {
     glPopMatrix();
 }
 
-// drawing the robot's "elbow"
-void drawElbow() {
+// drawing the robot's forearm
+void drawForeArm() {
     glPushMatrix();
 
     glTranslatef(-2.0, -1.75, -25.5);
@@ -470,7 +481,7 @@ void drawElbow() {
 }
 
 // drawing the robot's "palm"
-void drawPalm() {
+void drawHand() {
 
     glPushMatrix();
 
@@ -539,10 +550,10 @@ void drawPalm() {
 
 // drawing the robot's hand 
 // this function calls the 3 other functions that draw the parts of the hand
-void drawHand() {
-    drawShoulder();
-    drawElbow();
-    drawPalm();
+void drawArm() {
+    drawUpperArm();
+    drawForeArm();
+    drawHand();
 }
 
 // This function render the entire scene
@@ -554,20 +565,23 @@ void display() {
     if (show_menu)
         display_menu();
     // enabling/ disabling lights
+    lightning();
     if (light1enable) {
         glEnable(GL_LIGHT1);
-        lightning();
+       // lightning();
     }
     else {
         glDisable(GL_LIGHT1);
     }
     if (light2enable) {
         glEnable(GL_LIGHT2);
-        lightning();
+       // lightning();
     }
     else {
         glDisable(GL_LIGHT2);
     }
+
+
 
     // rendering the menu
     ImGui::Render();
@@ -575,11 +589,11 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_COLOR_MATERIAL);
     setCamera();
-    //draw the robot
+    //draw the robot parts
     drawHead();
     drawNeck();
     drawBody();
-    drawHand();
+    drawArm();
     drawTable();
     drawDrawers();
     drawFloor();
@@ -647,16 +661,20 @@ void keyboardPressed(unsigned char key, int x, int y) {
         DEG_SHO += 5;
         break;
     case 'a':
-        ROB_X -= 0.2;
+        if (ROB_X > MIN_ROB_X)
+            ROB_X -= 0.2;
         break;
     case 'd':
-        ROB_X += 0.2;
+        if (ROB_X < MAX_ROB_X)
+            ROB_X += 0.2;
         break;
     case 'w':
-        ROB_Z -= 0.2;
+        if (ROB_Z - 25.5 > MIN_ROB_Z)
+            ROB_Z -= 0.2;
         break;
     case 's':
-        ROB_Z += 0.2;
+        if (ROB_Z - 25.5 < MAX_ROB_Z)
+            ROB_Z += 0.2;
         break;
     case 'e':
         DEG_ROB -= 5;
@@ -724,36 +742,44 @@ void display_menu()
 
     if (ImGui::CollapsingHeader("Adjust Lights"))
     {
-        ImGui::SliderFloat("adjust lamp's ambient light", &light1Amb, 0.0f, 1.0f);
-        ImGui::SliderFloat("adjust lamp's diffuse light", &light1Dif, 0.0f, 1.0f);
-        ImGui::SliderFloat("adjust lamp's specular light", &light1Spec, 0.0f, 1.0f);
-        ImGui::SliderFloat("translate the lamp", &light1Z, -14.0f, -30.0f);
-        ImGui::RadioButton("enable lamp", &light1enable, 1); ImGui::SameLine();
-        ImGui::RadioButton("disable lamp", &light1enable, 0);
+        ImGui::SliderFloat("adjust scene's ambient light", &light0Amb, 0.0f, 1.0f);
         ImGui::Separator();
-        ImGui::SliderFloat("adjust spotlight's ambient light", &light2Amb, 0.0f, 1.0f);
-        ImGui::SliderFloat("adjust spotlight's diffuse light", &light2Dif, 0.0f, 1.0f);
-        ImGui::SliderFloat("adjust spotlight's specular light", &light2Spec, 0.0f, 1.0f);
-        ImGui::SliderFloat("translate the spotlight - x", &light2X, -6.0f, 6.0f);
-        ImGui::SliderFloat("translate the spotlight - y", &light2Y, 7.0f, 20.0f);
-        ImGui::SliderFloat("translate the spotlight - z", &light2Z, -14.0f, -30.0f);
-        ImGui::RadioButton("enable spotlight", &light2enable, 1); ImGui::SameLine();
-        ImGui::RadioButton("disable spotlight", &light2enable, 0);
+        if (ImGui::CollapsingHeader("Adjust Lamp's Light")) {
+            ImGui::SliderFloat("adjust lamp's ambient light", &light1Amb, 0.0f, 1.0f);
+            ImGui::SliderFloat("adjust lamp's diffuse light", &light1Dif, 0.0f, 1.0f);
+            ImGui::SliderFloat("adjust lamp's specular light", &light1Spec, 0.0f, 1.0f);
+            ImGui::SliderFloat("translate the lamp", &light1Z, -14.0f, -30.0f);
+            ImGui::RadioButton("enable lamp", &light1enable, 1); ImGui::SameLine();
+            ImGui::RadioButton("disable lamp", &light1enable, 0);
+        }
+        ImGui::Separator();
+        if (ImGui::CollapsingHeader("Adjust Spotlight's Light")) {
+            ImGui::Separator();
+            ImGui::SliderFloat("adjust spotlight's ambient light", &light2Amb, 0.0f, 1.0f);
+            ImGui::SliderFloat("adjust spotlight's diffuse light", &light2Dif, 0.0f, 1.0f);
+            ImGui::SliderFloat("adjust spotlight's specular light", &light2Spec, 0.0f, 1.0f);
+            ImGui::SliderFloat("translate the spotlight - x", &light2X, -6.0f, 6.0f);
+            ImGui::SliderFloat("translate the spotlight - y", &light2Y, 7.0f, 20.0f);
+            ImGui::SliderFloat("translate the spotlight - z", &light2Z, -14.0f, -30.0f);
+            ImGui::RadioButton("enable spotlight", &light2enable, 1); ImGui::SameLine();
+            ImGui::RadioButton("disable spotlight", &light2enable, 0);
+        }
         ImGui::Separator();
     }
 
     if (ImGui::CollapsingHeader("Help")) {
         ImGui::Text("Hi :) Welcome to Bob's room");
-        ImGui::TextWrapped("Here is all the information you need in order to have more fun then just look at Bob standing");
+        ImGui::TextWrapped("Here is all the information you to have need in order to have more fun than just watching Bob stand");
         ImGui::Separator();
         ImGui::Text("CAMERA:");
-        ImGui::TextWrapped("this category affect the camera - your view point, you can change the settings to see the room from diffrent spots and angles");
+        ImGui::TextWrapped("This category affects the camera - your view point, you can change the settings to see the room from diffrent spots and angles");
         ImGui::Separator();
         ImGui::Text("LIGHTS:");
-        ImGui::TextWrapped("this category affect the cone lamp and the spotlight.");
-        ImGui::TextWrapped("you can control the light settings and see how it's effect the objects from different angles");
+        ImGui::TextWrapped("This category affects the cone lamp and the spotlight.");
+        ImGui::TextWrapped("You can control the light settings and see how it affects the objects from different angles");
         ImGui::Separator();
         ImGui::Text("The Keys:");
+        ImGui::TextWrapped("Note that all movement directions are from the robot's point of view, so they may appear opposite");
         ImGui::Columns(2, "keyboard");
         ImGui::Separator();
         ImGui::Text("Key"); ImGui::NextColumn();
@@ -776,9 +802,9 @@ void display_menu()
         ImGui::Text("'j'"); ImGui::NextColumn(); ImGui::Text("spin the robot's elbow right"); ImGui::NextColumn();
         ImGui::Text("'h'"); ImGui::NextColumn(); ImGui::Text("spin the robot's elbow left"); ImGui::NextColumn();
         ImGui::Text("'v'"); ImGui::NextColumn(); ImGui::Text("change the view point (between camera and the robot)"); ImGui::NextColumn();
-        ImGui::Text("'c'"); ImGui::NextColumn(); ImGui::Text("show/ hide the menu"); ImGui::NextColumn();
-        ImGui::Text("'z'"); ImGui::NextColumn(); ImGui::Text("turn on/ off the lamp"); ImGui::NextColumn();
-        ImGui::Text("'x'"); ImGui::NextColumn(); ImGui::Text("turn on/ off the spotlight"); ImGui::NextColumn();
+        ImGui::Text("'c'"); ImGui::NextColumn(); ImGui::Text("show/hide the menu"); ImGui::NextColumn();
+        ImGui::Text("'z'"); ImGui::NextColumn(); ImGui::Text("turn on/off the lamp"); ImGui::NextColumn();
+        ImGui::Text("'x'"); ImGui::NextColumn(); ImGui::Text("turn on/off the spotlight"); ImGui::NextColumn();
         ImGui::Columns(1);
     }
     ImVec4 buttonColor = ImColor(1.0f, 0.392f, 0.125f, 1.0f);
